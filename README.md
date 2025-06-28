@@ -50,28 +50,15 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Configuration
 
-Copy the API keys template and configure:
-```bash
-cp config/api_keys_template.py config/api_keys.py
-```
-
-Edit `config/api_keys.py` with your credentials:
-```python
-# Telegram Bot Configuration (optional)
-TELEGRAM_BOT_TOKEN = "your_bot_token_here"
-TELEGRAM_CHAT_ID = "your_chat_id_here"
-```
-
-### 3. Run Demo
+### 2. Run Demo
 
 ```bash
 # Test the system with demo data
 python demo.py
 ```
 
-### 4. Full System Execution
+### 3. Full System Execution
 
 ```bash
 # Run the complete trading system
