@@ -41,11 +41,20 @@ def send_telegram_alert(message, parse_mode="HTML"):
         response = requests.post(url, data=payload, timeout=10)
         
         if response.status_code == 200:
-            print(f"✅ Telegram alert sent successfully")
-            return True
+            result = response.json()
+            if result.get('ok'):
+                print(f"✅ Telegram alert sent successfully")
+                return True
+            else:
+                print(f"❌ Telegram API error: {result.get('description', 'Unknown error')}")
+                return False
         else:
             print(f"❌ Failed to send Telegram alert: {response.status_code}")
-            print(f"Response: {response.text}")
+            try:
+                error_data = response.json()
+                print(f"Error details: {error_data.get('description', response.text)}")
+            except:
+                print(f"Response: {response.text[:200]}")
             return False
             
     except requests.exceptions.RequestException as e:
@@ -200,24 +209,67 @@ def send_error_alert(error_message, context=""):
 
 def test_telegram_connection():
     """
-    Test the Telegram bot connection.
+    Test the Telegram bot connection and configuration.
     
     Returns:
-        bool: True if connection is successful
+        bool: True if connection successful
     """
     try:
-        test_message = f"""
-🔧 <b>BOT TEST</b> 🔧
-
-✅ Telegram bot is working correctly!
-🕐 Test time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-🤖 Trading system is ready to send alerts.
-"""
+        # Check if credentials are configured
+        if not hasattr(api_keys, 'TELEGRAM_BOT_TOKEN') or not api_keys.TELEGRAM_BOT_TOKEN:
+            print("❌ TELEGRAM_BOT_TOKEN not configured")
+            return False
+            
+        if not hasattr(api_keys, 'TELEGRAM_CHAT_ID') or not api_keys.TELEGRAM_CHAT_ID:
+            print("❌ TELEGRAM_CHAT_ID not configured")
+            return False
+            
+        if api_keys.TELEGRAM_BOT_TOKEN == "your_actual_bot_token_here":
+            print("❌ Please replace placeholder bot token with actual token")
+            return False
+            
+        if api_keys.TELEGRAM_CHAT_ID == "your_actual_chat_id_here":
+            print("❌ Please replace placeholder chat ID with actual chat ID")
+            return False
         
-        return send_telegram_alert(test_message)
+        # Test bot info endpoint
+        url = f"https://api.telegram.org/bot{api_keys.TELEGRAM_BOT_TOKEN}/getMe"
+        print(f"🔍 Testing bot connection: {url[:50]}...")
         
+        response = requests.get(url, timeout=10)
+        
+        if response.status_code == 200:
+            bot_info = response.json()
+            if bot_info.get('ok'):
+                bot_name = bot_info.get('result', {}).get('username', 'Unknown')
+                print(f"✅ Bot connection successful: @{bot_name}")
+                
+                # Test sending a simple message
+                test_message = "🤖 Telegram bot connection test successful!"
+                test_url = f"https://api.telegram.org/bot{api_keys.TELEGRAM_BOT_TOKEN}/sendMessage"
+                test_payload = {
+                    'chat_id': api_keys.TELEGRAM_CHAT_ID,
+                    'text': test_message
+                }
+                test_response = requests.post(test_url, data=test_payload, timeout=10)
+                
+                if test_response.status_code == 200:
+                    print("✅ Test message sent successfully")
+                    return True
+                else:
+                    print(f"❌ Test message failed: {test_response.status_code}")
+                    print(f"Response: {test_response.text}")
+                    return False
+            else:
+                print(f"❌ Bot API returned error: {bot_info.get('description', 'Unknown error')}")
+                return False
+        else:
+            print(f"❌ Bot connection failed: HTTP {response.status_code}")
+            print(f"Response: {response.text[:200]}")
+            return False
+            
     except Exception as e:
-        print(f"❌ Telegram connection test failed: {e}")
+        print(f"❌ Error testing Telegram connection: {e}")
         return False
 
 
