@@ -39,7 +39,7 @@ OUTPUT_DIR = "data/outputs/"
 TRADE_LOG_PATH = f"{OUTPUT_DIR}trade_log.csv"
 SUMMARY_PATH = f"{OUTPUT_DIR}summary.csv"
 ML_RESULTS_PATH = f"{OUTPUT_DIR}ml_results.csv"
-INITIAL_CAPITAL = 100000  # Add this line
+INITIAL_CAPITAL = 100000  
 # Technical indicator settings
 RSI_WINDOW = 14
 DMA_SHORT = 20
