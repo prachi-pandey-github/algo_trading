@@ -118,12 +118,6 @@ TICKERS = [
 ]
 ```
 
-### Modifying Strategy
-Edit `modules/strategy_engine.py` to customize:
-- Entry/exit conditions
-- Risk management rules
-- Position sizing
-
 ### ML Models
 Edit `modules/ml_predictor.py` to:
 - Add new features
