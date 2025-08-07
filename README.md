@@ -39,7 +39,7 @@ algo_trading_system/
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/algo_trading_system.git
+git clone https://github.com/prachi-pandey-github/algo_trading
 cd algo_trading_system
 
 # Create virtual environment (recommended)
