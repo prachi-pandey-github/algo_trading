@@ -39,6 +39,10 @@ def initialize_csv_files():
 def log_trade(trade_data):
     """Append trade to CSV log"""
     try:
+        # Convert Timestamp to string format
+        if isinstance(trade_data.get('Timestamp'), pd.Timestamp):
+            trade_data['Timestamp'] = trade_data['Timestamp'].strftime('%Y-%m-%d %H:%M:%S')
+        
         # Use append mode for better performance
         df = pd.DataFrame([trade_data])
         df.to_csv(settings.TRADE_LOG_PATH, mode='a', header=False, index=False)
@@ -48,6 +52,11 @@ def log_trade(trade_data):
 def log_summary(summary_data):
     """Append strategy summary"""
     try:
+        # Convert datetime objects to string format
+        if isinstance(summary_data.get('StartDate'), pd.Timestamp):
+            summary_data['StartDate'] = summary_data['StartDate'].strftime('%Y-%m-%d')
+        if isinstance(summary_data.get('EndDate'), pd.Timestamp):
+            summary_data['EndDate'] = summary_data['EndDate'].strftime('%Y-%m-%d')
         df = pd.DataFrame([summary_data])
         df.to_csv(settings.SUMMARY_PATH, mode='a', header=False, index=False)
     except Exception as e:

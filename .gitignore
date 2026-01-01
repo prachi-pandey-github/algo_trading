@@ -19,22 +19,13 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
 # Virtual Environment
 .venv/
 venv/
 ENV/
 env/
-
-# API Keys and Secrets
-config/api_keys.py
-API_KEYS_BACKUP.txt
-*.env
-.env
-
-# Data and Logs
-data/outputs/*.csv
-*.log
 
 # IDE
 .vscode/
@@ -46,14 +37,18 @@ data/outputs/*.csv
 .DS_Store
 Thumbs.db
 
-# Jupyter Notebooks
-.ipynb_checkpoints/
-*.ipynb
+# Logs
+*.log
+logs/
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
+# API Keys and Secrets
+*.json
+api_keys.py
+secrets.py
+config/api_keys.py
 
-# Documentation
-docs/_build/
+# Data files (optional - uncomment if you don't want to track data)
+# data/outputs/*.csv
+
+# Environment variables
+.env

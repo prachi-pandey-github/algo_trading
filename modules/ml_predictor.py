@@ -10,9 +10,7 @@ This module implements:
 
 import pandas as pd
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.preprocessing import StandardScaler
@@ -92,13 +90,13 @@ def prepare_features(df):
     return ml_df
 
 
-def train_model(ml_df, model_type="decision_tree"):
+def train_model(ml_df, model_type=None):
     """
-    Train a machine learning model to predict price direction.
+    Train a Decision Tree model to predict price direction.
     
     Args:
         ml_df (pd.DataFrame): DataFrame with prepared features
-        model_type (str): Type of model - "decision_tree", "logistic_regression", or "random_forest"
+        model_type (str): Ignored parameter, kept for backward compatibility
         
     Returns:
         tuple: (trained_model, scaler, accuracy_score, classification_report)
@@ -170,38 +168,16 @@ def train_model(ml_df, model_type="decision_tree"):
             print(f"Warning: Scaling issues detected for {model_type}")
             return None, None, 0.0, "Scaling failed"
         
-        # Choose and train model based on model_type
-        if model_type == "decision_tree":
-            model = DecisionTreeClassifier(
-                max_depth=10,
-                min_samples_split=10,
-                min_samples_leaf=5,
-                random_state=42
-            )
-            # Decision trees don't require scaling, use original data
-            model.fit(X_train, y_train)
-            y_pred = model.predict(X_test)
-            
-        elif model_type == "logistic_regression":
-            model = LogisticRegression(
-                random_state=42,
-                max_iter=1000,
-                C=1.0
-            )
-            model.fit(X_train_scaled, y_train)
-            y_pred = model.predict(X_test_scaled)
-            
-        else:  # default to random_forest
-            model = RandomForestClassifier(
-                n_estimators=100,
-                max_depth=10,
-                min_samples_split=5,
-                min_samples_leaf=2,
-                random_state=42,
-                n_jobs=-1
-            )
-            model.fit(X_train_scaled, y_train)
-            y_pred = model.predict(X_test_scaled)
+        # Train Decision Tree model
+        model = DecisionTreeClassifier(
+            max_depth=10,
+            min_samples_split=10,
+            min_samples_leaf=5,
+            random_state=42
+        )
+        # Decision trees don't require scaling, use original data
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
         
         # Calculate metrics
         accuracy = accuracy_score(y_test, y_pred)

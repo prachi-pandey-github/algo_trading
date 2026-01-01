@@ -8,31 +8,30 @@ This module contains all configurable parameters including:
 - Data storage paths
 """
 
-# NIFTY 50 stocks (using NSE symbols for yfinance)
 TICKERS = [
     "RELIANCE.NS",    # Reliance Industries
-    "TCS.NS",         # Tata Consultancy Services
     "HDFCBANK.NS",    # HDFC Bank
+    "TCS.NS",         # Tata Consultancy Services
     "INFY.NS",        # Infosys
     "HINDUNILVR.NS",  # Hindustan Unilever
     "ICICIBANK.NS",   # ICICI Bank
-    "KOTAKBANK.NS",   # Kotak Mahindra Bank
     "BHARTIARTL.NS",  # Bharti Airtel
     "ITC.NS",         # ITC Limited
+    "BAJFINANCE.NS",  # Bajaj Finance
+    "WIPRO.NS",       # Wipro Limited
+    "HCLTECH.NS",     # HCL Technologies
     "SBIN.NS",        # State Bank of India
     "LT.NS",          # Larsen & Toubro
-    "WIPRO.NS",     # Wipro Limited
-    "MARUTI.NS",    # Maruti Suzuki
-    "ASIANPAINT.NS", # Asian Paints
-    "BAJFINANCE.NS", # Bajaj Finance
-    "HCLTECH.NS",   # HCL Technologies
-    "POWERGRID.NS", # Power Grid Corporation
-    "NTPC.NS",      # NTPC Limited
-    "ONGC.NS",      # Oil & Natural Gas Corp
-    "TATASTEEL.NS"  # Tata Steel
+    "AXISBANK.NS",    # Axis Bank
+    "ASIANPAINT.NS"   # Asian Paints
 ]
-DATA_RANGE = "6mo"  # Data range for fetching historical data (6 months for backtesting)
-INTERVAL = "1d"  # Data interval (1d = daily, 1h = hourly, etc.)
+DATA_RANGE = "6mo"  # Data range for 6 months backtesting as per requirement
+INTERVAL = "1d"  # Daily data for Indian market
+
+# Indian Market Settings
+MARKET_OPEN = "09:15"  # Indian market opening time
+MARKET_CLOSE = "15:30"  # Indian market closing time
+TIMEZONE = "Asia/Kolkata"  # Indian timezone
 
 # Add CSV storage paths
 OUTPUT_DIR = "data/outputs/"

@@ -7,7 +7,10 @@ from modules import (
     ml_predictor,
     telegram_bot
 )
+
 from datetime import datetime
+from modules.google_sheets_logger import GoogleSheetsLogger
+from config.google_sheets import GOOGLE_CREDS_PATH, GOOGLE_SHEET_NAME
 
 
 def main():
@@ -21,17 +24,31 @@ def main():
     4. Machine learning model training
     5. Results logging and Telegram notifications
     """
-    print("🚀 Starting Algorithmic Trading System")
+    print("Starting Algorithmic Trading System")
     print("=" * 50)
     
+
     # Initialize system components
     csv_writer.initialize_csv_files()
     telegram_bot.send_startup_message()
-    
+
+    # Initialize Google Sheets logger
+    print("\nInitializing Google Sheets connection...")
+    try:
+        sheets_logger = GoogleSheetsLogger(GOOGLE_CREDS_PATH, GOOGLE_SHEET_NAME)
+        print("Successfully connected to Google Sheets")
+    except Exception as e:
+        print(f"Error connecting to Google Sheets: {str(e)}")
+        print("Please check that:")
+        print("1. The sheet name matches exactly: 'Algo Trading'")
+        print("2. The service account email has Editor access to the sheet:")
+        print("   sheets-access-service@thematic-nature-455407-t7.iam.gserviceaccount.com")
+        return
+
     all_summaries = []
     
     for ticker in settings.TICKERS:
-        print(f"\n📊 Processing {ticker}...")
+        print(f"\nProcessing {ticker}...")
         
         try:
             # 1. Data Ingestion and Technical Analysis
@@ -39,7 +56,7 @@ def main():
             df = data_loader.calculate_technical_indicators(df)
             
             if df.empty:
-                print(f"⚠️ No data available for {ticker}, skipping...")
+                print(f"No data available for {ticker}, skipping...")
                 continue
             
             # 2. Strategy Execution
@@ -49,6 +66,7 @@ def main():
             trades, total_return, win_rate, trade_count = backtester.backtest_strategy(df)
             
             # 4. Trade Logging
+
             for trade in trades:
                 trade_data = {
                     'Timestamp': trade['Timestamp'],
@@ -64,11 +82,17 @@ def main():
                     'Volume_Ratio': trade.get('Volume_Ratio', 1)
                 }
                 csv_writer.log_trade(trade_data)
+                # Log to Google Sheets (Trade Log tab)
+                sheets_logger.log_trade([
+                    trade_data['Timestamp'], trade_data['Ticker'], trade_data['Signal'],
+                    trade_data['Price'], trade_data['Quantity'], trade_data['PnL']
+                ])
             
             # 5. Machine Learning Model Training
             best_accuracy = train_ml_models(ticker, df)
             
             # 6. Performance Summary
+
             summary_data = {
                 'Ticker': ticker,
                 'StartDate': df.index[0].date(),
@@ -80,6 +104,14 @@ def main():
                 'TotalTrades': trade_count
             }
             all_summaries.append(summary_data)
+            # Log summary P&L to Google Sheets (Summary P&L tab)
+            sheets_logger.log_summary([
+                str(datetime.now().date()), summary_data['FinalValue']
+            ])
+            # Log win ratio to Google Sheets (Win Ratio tab)
+            sheets_logger.log_win_ratio([
+                str(datetime.now().date()), summary_data['WinRate']
+            ])
             
             # 7. Trading Alerts
             send_trading_alerts(ticker, trades, best_accuracy)
@@ -97,25 +129,20 @@ def main():
 def train_ml_models(ticker, df):
     """Train and evaluate multiple ML models for the given ticker."""
     ml_df = ml_predictor.prepare_features(df.copy())
-    models_to_test = ["decision_tree", "logistic_regression", "random_forest"]
-    best_accuracy = 0
-    best_model_name = ""
+    print(f"  🤖 Training Decision Tree model...")
     
-    print(f"  🤖 Training ML models...")
-    
-    for model_type in models_to_test:
-        try:
-            ml_result = ml_predictor.train_model(ml_df, model_type=model_type)
+    try:
+        ml_result = ml_predictor.train_model(ml_df, model_type="decision_tree")
+        
+        if len(ml_result) == 4:
+            model, scaler, accuracy, class_report = ml_result
+            if model is not None:
+                best_accuracy = accuracy
+                print(f"    Decision Tree accuracy: {accuracy:.3f}")
             
-            if len(ml_result) == 4:
-                model, scaler, accuracy, class_report = ml_result
-                if model is not None and accuracy > best_accuracy:
-                    best_accuracy = accuracy
-                    best_model_name = model_type
-                    print(f"    {model_type}: {accuracy:.3f}")
-                
-        except Exception as e:
-            print(f"    {model_type}: Failed - {e}")
+    except Exception as e:
+        print(f"    Decision Tree: Failed - {e}")
+        best_accuracy = 0
     
     # Log ML results
     if best_accuracy > 0:
@@ -123,9 +150,9 @@ def train_ml_models(ticker, df):
             'Timestamp': datetime.now(),
             'Ticker': ticker,
             'Accuracy': best_accuracy,
-            'Features': f"Best Model: {best_model_name}, RSI, MACD, Volume, BB, MA"
+            'Features': "Model: Decision Tree, RSI, MACD, Volume, BB, MA"
         })
-        print(f"  ✅ Best ML model: {best_model_name} ({best_accuracy:.2%})")
+        print(f"  ✅ ML model accuracy: {best_accuracy:.2%}")
     else:
         print(f"  ⚠️ ML training failed for {ticker}")
     
@@ -163,9 +190,11 @@ def finalize_system(all_summaries):
     print("\n" + "=" * 50)
     print("📋 Finalizing System Results...")
     
+
     # Save summaries
     for summary in all_summaries:
         csv_writer.log_summary(summary)
+        # Optionally, could log again to Google Sheets here if needed
     
     # Send daily summary
     if all_summaries:

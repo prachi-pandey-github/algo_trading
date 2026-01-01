@@ -14,7 +14,7 @@ import os
 from config import settings
 from datetime import datetime, timedelta
 
-def fetch_stock_data(ticker, period="6mo", interval="1d", source="yfinance"):
+def fetch_stock_data(ticker, period=settings.DATA_RANGE, interval=settings.INTERVAL, source="yfinance"):
     """
     Fetch historical stock data from specified source
     Args:
@@ -26,29 +26,53 @@ def fetch_stock_data(ticker, period="6mo", interval="1d", source="yfinance"):
         pd.DataFrame: Historical stock data with datetime index
     """
     try:
+        print(f"[DEBUG] Fetching data for {ticker} | period={period} | interval={interval} | source={source}")
         if source.lower() == "yfinance":
-            return _fetch_from_yfinance(ticker, period, interval)
+            df = _fetch_from_yfinance(ticker, period, interval)
+            print(f"[DEBUG] Data shape for {ticker}: {df.shape}")
+            if df.empty:
+                print(f"[INFO] No data for {ticker}, trying fallback ticker 'RELIANCE.NS' for connectivity test.")
+                fallback_df = _fetch_from_yfinance('RELIANCE.NS', period, interval)
+                print(f"[DEBUG] Fallback AAPL data shape: {fallback_df.shape}")
+                if not fallback_df.empty:
+                    print("[SUGGESTION] Issue might be with NSE market hours or connectivity. Check if market is open and try again.")
+                else:
+                    print("[ERROR] yfinance is not returning data for any ticker. Check your internet connection or yfinance version.")
+            return df
         elif source.lower() == "csv":
             file_path = os.path.join(settings.HISTORICAL_DATA_DIR, f"{ticker}.csv")
+            print(f"[DEBUG] Loading from CSV: {file_path}")
             return load_from_csv(file_path)
         else:
             raise ValueError(f"Invalid data source: {source}")
     except Exception as e:
-        print(f"Error fetching data for {ticker}: {e}")
+        print(f"[ERROR] Exception fetching data for {ticker}: {e}")
         return pd.DataFrame()
 
 def _fetch_from_yfinance(ticker, period, interval):
     """Fetch data using Yahoo Finance API"""
+    print(f"[DEBUG] Using yfinance to fetch {ticker} | period={period} | interval={interval}")
     stock = yf.Ticker(ticker)
-    df = stock.history(period=period, interval=interval)
-    
-    if df.empty:
-        raise ValueError(f"No data found for {ticker}")
-    
-    # Clean and format data
-    df = df[['Open', 'High', 'Low', 'Close', 'Volume']]
-    df.index.name = "Date"
-    return df
+    try:
+        df = stock.history(period=period, interval=interval)
+        print(f"[DEBUG] yfinance returned shape: {df.shape} for {ticker}")
+        if df.empty:
+            print(f"[WARNING] No data found for {ticker} with yfinance. Trying fallback period/interval...")
+            # Try fallback period and interval
+            fallback_period = "1mo"
+            fallback_interval = "1d"
+            df = stock.history(period=fallback_period, interval=fallback_interval)
+            print(f"[DEBUG] Fallback yfinance returned shape: {df.shape} for {ticker} (period={fallback_period}, interval={fallback_interval})")
+            if df.empty:
+                print(f"[ERROR] Still no data for {ticker} with fallback period/interval.")
+                raise ValueError(f"No data found for {ticker} (even with fallback period/interval)")
+        # Clean and format data
+        df = df[['Open', 'High', 'Low', 'Close', 'Volume']]
+        df.index.name = "Date"
+        return df
+    except Exception as e:
+        print(f"[ERROR] Exception in _fetch_from_yfinance for {ticker}: {e}")
+        raise
 
 def calculate_technical_indicators(df):
     """

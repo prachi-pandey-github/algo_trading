@@ -43,13 +43,13 @@ def send_telegram_alert(message, parse_mode="HTML"):
         if response.status_code == 200:
             result = response.json()
             if result.get('ok'):
-                print(f"✅ Telegram alert sent successfully")
+                print(f"Telegram alert sent successfully")
                 return True
             else:
-                print(f"❌ Telegram API error: {result.get('description', 'Unknown error')}")
+                print(f"Telegram API error: {result.get('description', 'Unknown error')}")
                 return False
         else:
-            print(f"❌ Failed to send Telegram alert: {response.status_code}")
+            print(f"Failed to send Telegram alert: {response.status_code}")
             try:
                 error_data = response.json()
                 print(f"Error details: {error_data.get('description', response.text)}")
@@ -58,10 +58,10 @@ def send_telegram_alert(message, parse_mode="HTML"):
             return False
             
     except requests.exceptions.RequestException as e:
-        print(f"❌ Network error sending Telegram alert: {e}")
+        print(f"Network error sending Telegram alert: {e}")
         return False
     except Exception as e:
-        print(f"❌ Unexpected error sending Telegram alert: {e}")
+        print(f"Unexpected error sending Telegram alert: {e}")
         return False
 
 
@@ -91,12 +91,12 @@ def send_trading_signal(ticker, signal_type, price, rsi, confidence=None):
     # Format the message exactly as requested
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
-    message = f"""🚨 TRADING ALERT 🚨
-📊 Ticker: {ticker}
-📈 Action: {signal_display}
-💰 Price: ${price:.2f}
-📉 RSI: {rsi:.1f}
-🕐 Time: {timestamp}"""
+    message = f"""TRADING ALERT
+Ticker: {ticker}
+Action: {signal_display}
+Price: ${price:.2f}
+RSI: {rsi:.1f}
+Time: {timestamp}"""
     
     if confidence is not None:
         message += f"\n🎯 ML Confidence: {confidence:.1%}"
@@ -115,7 +115,7 @@ def send_daily_summary(summaries):
         bool: True if sent successfully
     """
     try:
-        message = "📊 <b>DAILY TRADING SUMMARY</b> 📊\n\n"
+        message = "<b>DAILY TRADING SUMMARY</b>\n\n"
         
         total_return = 0
         total_trades = 0
@@ -148,7 +148,7 @@ def send_daily_summary(summaries):
         avg_return = total_return / len(summaries) if summaries else 0
         message += f"""
 ━━━━━━━━━━━━━━━━━━━━
-📈 <b>OVERALL PERFORMANCE</b>
+<b>OVERALL PERFORMANCE</b>
    Avg Return: {avg_return:.2f}%
    Total Trades: {total_trades}
    Date: {datetime.now().strftime('%Y-%m-%d')}
@@ -157,7 +157,7 @@ def send_daily_summary(summaries):
         return send_telegram_alert(message)
         
     except Exception as e:
-        print(f"❌ Error sending daily summary: {e}")
+        print(f"Error sending daily summary: {e}")
         return False
 
 
@@ -176,10 +176,10 @@ def send_ml_results(ticker, accuracy, features):
     message = f"""
 🤖 <b>ML MODEL UPDATE</b> 🤖
 
-📊 <b>Ticker:</b> {ticker}
-🎯 <b>Accuracy:</b> {accuracy:.2%}
-🔧 <b>Features:</b> {features}
-🕐 <b>Trained:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+<b>Ticker:</b> {ticker}
+<b>Accuracy:</b> {accuracy:.2%}
+<b>Features:</b> {features}
+<b>Trained:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 """
     
     return send_telegram_alert(message)
@@ -217,7 +217,7 @@ def test_telegram_connection():
     try:
         # Check if credentials are configured
         if not hasattr(api_keys, 'TELEGRAM_BOT_TOKEN') or not api_keys.TELEGRAM_BOT_TOKEN:
-            print("❌ TELEGRAM_BOT_TOKEN not configured")
+            print("TELEGRAM_BOT_TOKEN not configured")
             return False
             
         if not hasattr(api_keys, 'TELEGRAM_CHAT_ID') or not api_keys.TELEGRAM_CHAT_ID:
