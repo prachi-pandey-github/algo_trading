@@ -94,7 +94,7 @@ def send_trading_signal(ticker, signal_type, price, rsi, confidence=None):
     message = f"""TRADING ALERT
 Ticker: {ticker}
 Action: {signal_display}
-Price: ${price:.2f}
+Price: ₹{price:.2f}
 RSI: {rsi:.1f}
 Time: {timestamp}"""
     
