@@ -167,7 +167,7 @@ def send_trading_alerts(ticker, trades, ml_accuracy):
         # Send alert for the most recent trade
         latest_trade = trades[-1]
         if latest_trade['Type'] in ['BUY', 'SELL']:
-            print(f"  📱 Sending alert: {latest_trade['Type']} at ${latest_trade['Price']:.2f}")
+            print(f"  📱 Sending alert: {latest_trade['Type']} at ₹{latest_trade['Price']:.2f}")
             
             success = telegram_bot.send_trading_signal(
                 ticker=ticker,
